@@ -37,7 +37,7 @@ QR-attendance-system/
 
 
 ## 📄 화면 예시
-![출석 체크 폼](screenshots/form.png)
+![출석 체크 폼](screenshots/form.png.jpg)
 
 ## 🧩 코드 구조
 | 함수명                    | 역할                                     |
