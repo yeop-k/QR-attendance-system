@@ -2,7 +2,8 @@
 
 스쿼시 동아리 QR 출석 자동화 및 벌금 정산 시스템
 
-## 📁 폴더 구조
+📁 폴더 구조
+
 QR-attendance-system/
 ├── Code.gs # Google Apps Script 서버 로직
 ├── index.html # 사용자 UI 화면
