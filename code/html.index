@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>출석체크</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <div class="container my-4">
+    <h2 id="dateTitle" class="text-center mb-4">출석체크</h2>
+
+    <form class="mb-4" onsubmit="return false;">
+      <div class="mb-3">
+        <input
+          id="gen" type="number" class="form-control"
+          placeholder="기수 (숫자만 입력)"
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <input
+          id="name" type="text" class="form-control"
+          placeholder="이름"
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <select id="shower" class="form-select" required>
+          <option value="" disabled selected>샤워장 이용여부</option>
+          <option value="이용">이용</option>
+          <option value="미이용">미이용</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <input
+          id="code" type="number" class="form-control"
+          placeholder="인증 숫자를 입력해주세요"
+          required
+        />
+        <div id="authHint" class="form-text">로딩 중…</div>
+      </div>
+      <button
+        type="button"
+        class="btn btn-primary w-100"
+        onclick="submitForm()"
+      >제출</button>
+      <p id="result" class="mt-2"></p>
+    </form>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>기수</th>
+          <th>이름</th>
+          <th>샤워장</th>
+          <th>시간</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr>
+          <td colspan="5" class="text-center text-muted">
+            아직 출석 내역이 없습니다.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let todayCodes = [];
+
+    function showToday() {
+      const d = new Date();
+      const days = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+      document.getElementById('dateTitle').innerText =
+        `${d.getMonth()+1}월 ${d.getDate()}일 ${days[d.getDay()]} 출석체크`;
+    }
+
+    function fetchTodayCodes() {
+      google.script.run
+        .withSuccessHandler(codes => {
+          todayCodes = codes;
+          const hint = document.getElementById('authHint');
+          if (codes.length === 1) {
+            hint.innerText = '인증 숫자를 입력하세요.';
+          } else {
+            hint.innerText = `${codes.join(', ')} 중 하나를 입력해주세요.`;
+          }
+        })
+        .getTodayCode();
+    }
+
+    function submitForm() {
+      const gen    = document.getElementById('gen').value;
+      const name   = document.getElementById('name').value;
+      const shower = document.getElementById('shower').value;
+      const code   = document.getElementById('code').value;
+      const result = document.getElementById('result');
+
+      if (!todayCodes.includes(Number(code))) {
+        result.innerText = '❌ 인증 실패: 올바른 인증 숫자를 입력해주세요.';
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(msg => {
+          result.innerText = msg;
+          if (msg.startsWith('✅')) loadTable();
+        })
+        .checkAttendance(gen, name, shower, code);
+    }
+
+    function loadTable() {
+      google.script.run.withSuccessHandler(rows => {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        if (rows.length <= 1) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="text-center text-muted">
+                아직 출석 내역이 없습니다.
+              </td>
+            </tr>`;
+          return;
+        }
+        rows.slice(1).forEach((r, i) => {
+          const [g, n, s, t] = r;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <th scope="row">${i+1}</th>
+            <td>${g}</td>
+            <td>${n}</td>
+            <td>${s}</td>
+            <td>${new Date(t).toLocaleString()}</td>`;
+          tbody.appendChild(tr);
+        });
+      }).getAttendance();
+    }
+
+    window.onload = () => {
+      showToday();
+      fetchTodayCodes();
+      loadTable();
+      // ← 여기 추가: 10초마다 자동 갱신
+      setInterval(loadTable, 10 * 1000);
+    };
+  </script>
+</body>
+</html>
