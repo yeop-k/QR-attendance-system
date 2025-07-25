@@ -92,15 +92,50 @@ function generateRandomCodes() {
 
 // 출석 내역(오늘자만) 조회
 function getAttendance() {
-  const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ss.getSheetByName('출석');
-  const data  = sheet.getDataRange().getValues();
+  // const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+  // const sheet = ss.getSheetByName('출석');
+  // const data  = sheet.getDataRange();
+  // const values = data.getValues();
+  // const today = Utilities.formatDate(new Date(), TIMEZONE, DATE_FORMAT);
+
+
+  // 1. 현재 연결된 스프레드시트 열기
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+
+  // 2. 읽고 싶은 시트 선택 (예: 'Sheet1')
+  const sheet = spreadsheet.getSheetByName('출석');
+
+  if (!sheet) {
+    return "❌ 시트를 찾지 못했습니다.";
+  }
+
+  // 3. 데이터 범위 가져오기 (실제 데이터가 있는 부분만)
+  const range = sheet.getDataRange();
+
+  // 4. 셀 값을 2차원 배열로 가져오기
+  const values = range.getValues().map((e, i) => {
+    if(i == 0) return e;
+
+    const gen    = e[0];
+    const name   = e[1];
+    const shower = e[2];
+    const time = Utilities.formatDate(e[3], TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
+    const code   = e[4];
+    
+    return [gen, name, shower, time, code];
+  });
+  
+  if (!values) {
+    return "❌ 시트를 찾지 못했습니다.";
+  }
   const today = Utilities.formatDate(new Date(), TIMEZONE, DATE_FORMAT);
 
-  return data.filter((row, i) => {
-    if (i === 0) return true;  // 헤더 유지
-    const ts = new Date(row[3]);
-    if (isNaN(ts.getTime())) return false;
-    return Utilities.formatDate(ts, TIMEZONE, DATE_FORMAT) === today;
+  // 헤더 + 오늘 날짜 데이터만 필터링
+  const filtered = values.filter((row, i) => {
+    if (i === 0) return false; // 헤더
+    const time_date = Utilities.formatDate(new Date(row[3]), TIMEZONE, DATE_FORMAT);
+    return time_date === today;
   });
+
+  return filtered;
 }
