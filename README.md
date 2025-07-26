@@ -55,7 +55,7 @@ QR-attendance-system/
 ---
 
 ### 📊 ③ 실시간 출석 현황 테이블
-![출석 테이블](screenshots/table.png)
+![출석 테이블](screenshots/table_v2.png)
 > 오늘 출석한 인원이 테이블에 실시간으로 표시되며, 새로고침 없이 10초마다 자동으로 갱신됩니다.
 
 
