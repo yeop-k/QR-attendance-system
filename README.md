@@ -14,6 +14,8 @@ QR-attendance-system/
 - QR 기반 인증 코드 자동 생성 및 검증  
 - Google Sheets (`출석` 시트) 연동 출석 기록  
 - `getAttendance()`로 오늘자 출석만 필터링   
+- 중복 출석 방지 및 코드 일치 여부 검증
+- 실시간 출석 현황 테이블 표시 (index.html 내 포함)
 
 ## ⚙️ 설치 및 실행 방법
 1. 스프레드시트 준비  
@@ -30,28 +32,62 @@ QR-attendance-system/
    - 배포 후 생성된 URL 복사  
 4. 실행  
    - 복사한 웹앱 URL 접속 → 즉시 출석폼·실시간 테이블 확인  
-
-## 🧪 사용 예시
-1. 사용자 입력:  
-   - 기수, 이름, 샤워장 이용 여부, 인증 번호  
-
+   - 기수·이름·샤워장·인증코드 입력 → 출석 처리 결과 확인  
+   - 하단 테이블에서 오늘자 출석 현황 실시간 확인
 
 ## 📄 화면 예시
-![출석 체크 폼](screenshots/form.png.jpg)
+
+| 구분 | 이미지 | 설명 |
+|------|--------|------|
+| ① 인증 성공 | ![성공](screenshots/success.png) | 인증 성공 시 `✅ 출석 완료!` 메시지 표시 |
+| ② 인증 실패 | ![실패](screenshots/fail.png) | 인증 실패 시 오류 메시지 |
+| ③ 출석 현황 반영 | ![테이블](screenshots/table.png) | 실시간 출석 테이블에 정보 반영됨 |
 
 ## 🧩 코드 구조
-| 함수명                    | 역할                                     |
-|---------------------------|------------------------------------------|
-| `doGet()`                 | 웹앱 진입점, `index.html` 반환           |
-| `checkAttendance(gen, ...)` | 출석 등록 및 인증 로직                    |
-| `getTodayCode()`          | 오늘의 인증 코드 조회(자동 생성 포함)    |
-| `getAttendance()`         | 오늘자 출석만 필터링하여 전체 반환       |
-| `generateRandomCodes()`   | 1~100 중 무작위 3개 코드 생성           |
+
+| 이름 / 함수명                       | 역할 |
+|-----------------------------------|------|
+| `doGet()`                         | 웹앱 진입점으로 `index.html` 반환 |
+| `checkAttendance(gen, name, shower, code)` | 사용자 입력 검증, 인증코드 확인 후 출석 저장 |
+| `getTodayCode()`                  | 오늘의 인증코드 자동 생성 또는 ScriptProperties에서 조회 |
+| `getAttendance()`                 | 시트의 전체 데이터 중 오늘 날짜에 해당하는 출석 내역 필터링 |
+| `generateRandomCodes()`           | 1~100 중 중복 없는 3개의 무작위 숫자 생성 |
+| `SPREADSHEET_ID`                  | 연결된 Google 스프레드시트 ID 상수 |
+| `TIMEZONE`, `DATE_FORMAT`         | 날짜 비교 기준 설정 (`Asia/Seoul`, `yyyy-MM-dd`) |
+| `ScriptProperties` (내부 key: `codes_`, `selected_`) | 인증코드 상태를 날짜별로 저장/조회하는 키-값 저장소 |
+| `submitForm()` (index.html)       | 입력된 사용자 데이터를 `checkAttendance()`로 전송 |
+| `loadTable()` (index.html)        | `getAttendance()` 호출 후 출석 현황 테이블에 표시 |
+| `fetchTodayCodes()` (index.html)  | 오늘의 인증코드를 `getTodayCode()`로 받아와 힌트 표시 |
+
+---
 
 ## 💻 기술 스택
-- Google Apps Script (Code.gs)
-- HTML/CSS/JavaScript + Bootstrap 5
-- Git + GitHub
+
+- **Google Apps Script (Code.gs)**  
+  - 백엔드 로직, Google Sheets 연동  
+  - `ScriptProperties`로 인증 상태 보존  
+  - 서버-클라이언트 간 함수 연동 (`google.script.run`)
+  
+- **HTML / CSS / JavaScript**  
+  - 사용자 입력폼, 결과 메시지, 동적 테이블 UI 구현  
+  - `submitForm()`, `loadTable()` 등 클라이언트 로직 포함
+
+- **Bootstrap 5**  
+  - 반응형 UI 구성 (폼, 버튼, 테이블 스타일링 등)
+
+- **ScriptProperties (내장 서비스)**  
+  - 인증코드 및 사용 상태를 날짜별로 저장 (재사용 가능하게)
+
+- **Git + GitHub**  
+  - 코드 버전 관리 및 포트폴리오 배포용 저장소 운영
+
+---
 
 ## 🤖 AI 도구
-- ChatGPT (OpenAI): 코드 보조 및 아이디어 생성
+
+- **ChatGPT (OpenAI)**  
+  - 인증 구조 설계 및 로직 검증 (e.g. 랜덤 인증코드 vs 고정코드 비교 방식)  
+  - 날짜 파싱 오류 해결 및 `getAttendance()` 개선  
+  - UI 흐름 중심의 README 구성 및 시나리오 정리  
+  - GAS 오류 디버깅 (e.g. `Date` 객체 파싱, `null` 원인 추적 등)  
+  - 코드 자동화 및 사용자 중심 기능 설명에 활용
