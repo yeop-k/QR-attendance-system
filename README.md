@@ -43,13 +43,13 @@ QR-attendance-system/
 ## 📄 화면 예시
 
 ### ✅ ① 인증 성공 화면
-![인증 성공](screenshots/success.png)
+![인증 성공](screenshots/success_v2.png)
 > 사용자가 기수, 이름, 샤워장 이용 여부, 인증 코드를 올바르게 입력하면 `✅ 출석 완료!` 메시지가 표시되고, 아래 테이블에 자동으로 반영됩니다.
 
 ---
 
 ### ❌ ② 인증 실패 화면
-![인증 실패](screenshots/fail.png)
+![인증 실패](screenshots/fail_v2.png)
 > 인증 코드가 오늘의 코드와 일치하지 않을 경우, `❌ 인증 실패` 메시지가 뜨며 출석은 저장되지 않습니다.
 
 ---
