@@ -7,6 +7,11 @@ QR-attendance-system/
 ├ code/
 │   ├ Code.gs      # Google Apps Script 서버 로직
 │   └ index.html   # 사용자 UI 화면
+├── screenshots/
+│   ├── success.png
+│   ├── fail.png
+│   ├── table.png
+│   └── alteryx-workflow.png
 └ README.md        # 프로젝트 설명
 
 
@@ -102,3 +107,44 @@ QR-attendance-system/
   - UI 흐름 중심의 README 구성 및 시나리오 정리  
   - GAS 오류 디버깅 (e.g. `Date` 객체 파싱, `null` 원인 추적 등)  
   - 코드 자동화 및 사용자 중심 기능 설명에 활용
+
+## 🔄 향후 확장 계획: 벌금 정산 자동화 (with Alteryx)
+
+현재 시스템은 QR 기반 출석체크와 실시간 현황 표시까지 자동화되어 있습니다.  
+여기서 더 나아가, **출석 데이터를 바탕으로 벌금 정산을 자동화하는 Alteryx 워크플로우**도 구축 중입니다.
+
+---
+
+### 🧩 Alteryx 워크플로우 개요
+
+![Alteryx Workflow](screenshots/alteryx-workflow.png)
+
+> 위 워크플로우는 `QR 출석_Alteryx.xlsx` 파일을 불러와 다음과 같은 과정을 자동으로 처리합니다:
+
+1. **출석 시간 정제 및 변환**
+   - 출석 시간 형식 표준화 (`datetime`, `시간만 분리`)
+2. **지각 여부 판별**
+   - 기준 시각인 `오전 4시 11분` 이후 도착 시 → `지각 1회`
+3. **기수별 지각 횟수 합산**
+   - `Summarize` 도구를 통해 기수/이름별 지각 누적 집계
+4. **벌금 계산**
+   - 지각 횟수 × 2,000원 자동 계산
+5. **정산 결과 출력**
+   - 결과는 `벌금정산.xlsx`로 자동 저장됨
+
+---
+
+### 🎯 향후 목표
+
+- `출석 시트(Google Sheets)`와 Alteryx 워크플로우 간 연동 자동화
+- 정기적으로 `.csv` 내보내기 or API 연동으로 자동 정산 갱신
+- 누적 벌금 통계 대시보드화 (추후 Power BI 연계 가능성 검토)
+
+---
+
+### 💡 기대 효과
+
+- **지각자 벌금 산정 기준 일관화**
+- **실시간 출석 → 정기 정산까지 한 번에 연결**
+- **관리자 개입 없이도 회계 투명성 확보**
+
